@@ -1,6 +1,9 @@
-from sqlalchemy import String, Boolean, Date
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-import datetime
+from datetime import datetime
+
+from sqlalchemy import Column, Integer, String, func, Date, Boolean, DateTime
+from sqlalchemy.orm import relationship, mapped_column, Mapped, DeclarativeBase
+from sqlalchemy.sql.schema import ForeignKey
+from sqlalchemy.sql.sqltypes import DateTime
 
 
 class Base(DeclarativeBase):
@@ -17,4 +20,17 @@ class Contact(Base):
     phone: Mapped[str] = mapped_column(String(20), nullable=False)
     birthday: Mapped[datetime.date] = mapped_column(Date)
     extra_info: Mapped[str] = mapped_column(String(250), nullable=True)
-    done: Mapped[bool] = mapped_column(Boolean, default=False)
+    user_id = Column(
+        "user_id", ForeignKey("users.id", ondelete="CASCADE"), default=None
+    )
+    user = relationship("User", backref="notes")
+    
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True)
+    email = Column(String, unique=True)
+    hashed_password = Column(String)
+    created_at = Column(DateTime, default=func.now())
+    avatar = Column(String(255), nullable=True)
+    confirmed = Column(Boolean, default=False)
